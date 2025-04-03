@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+text {
+  font-family: Times new Roman, sans-serif;
+  font-size: 24px;
+}
+
+axis-label, .legend-label {
+  fill: #635f5d;
+  font-family: sans-serif;
+  font-size: 15pt;
+}
+
+.title {
+  text-align: center;
+}
+/*# sourceMappingURL=Activity 7 Question 1.1303bb05.css.map */

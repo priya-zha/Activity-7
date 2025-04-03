@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js Area Chart - Temperature Trends</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        svg {
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Temperature Trends in Århus, Denmark</h2>
+    <svg id="areaChart" width="800" height="500"></svg>
+
+    <script>
+        // GitHub Gist CSV dataset URL
+        const csvUrl = "https://gist.githubusercontent.com/priya-zha/3a8f93f8c7921bee8d3bfdb2bc2c9cb4/raw/688a0643f2ed75e817e279f7bfc64805d6a76755/weather_climate.csv";
+
+        // Set up dimensions
+        const width = 800, height = 500;
+        const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+
+        // Create scales
+        const x = d3.scaleTime().range([margin.left, width - margin.right]);
+        const y = d3.scaleLinear().range([height - margin.bottom, margin.top]);
+
+        // Create SVG container
+        const svg = d3.select("#areaChart");
+
+        // Fetch and parse data
+        d3.csv(csvUrl).then(data => {
+            // Convert data types
+            data.forEach(d => {
+                d.dt = new Date(d.dt);
+                d.AverageTemperature = +d.AverageTemperature;
+            });
+
+            // Filter out missing values
+            data = data.filter(d => !isNaN(d.AverageTemperature));
+
+            // Set domains
+            x.domain(d3.extent(data, d => d.dt));
+            y.domain([d3.min(data, d => d.AverageTemperature) - 1, d3.max(data, d => d.AverageTemperature) + 1]);
+
+            // Create area generator
+            const area = d3.area()
+                .x(d => x(d.dt))
+                .y0(height - margin.bottom)
+                .y1(d => y(d.AverageTemperature))
+                .curve(d3.curveMonotoneX); // Smooth curve
+
+            // Append area path
+            svg.append("path")
+                .datum(data)
+                .attr("fill", "steelblue")
+                .attr("opacity", 0.7)
+                .attr("d", area);
+
+            // Create axes
+            const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y-%m"));
+            const yAxis = d3.axisLeft(y);
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height - margin.bottom})`)
+                .call(xAxis);
+
+            svg.append("g")
+                .attr("transform", `translate(${margin.left},0)`)
+                .call(yAxis);
+
+            // Add axis labels
+            svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", height - 10)
+                .attr("text-anchor", "middle")
+                .attr("font-size", "14px")
+                .text("Date");
+
+            svg.append("text")
+                .attr("x", -height / 2)
+                .attr("y", 15)
+                .attr("transform", "rotate(-90)")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "14px")
+                .text("Average Temperature (°C)");
+        }).catch(error => console.error("Error loading data:", error));
+
+    </script>
+
+</body>
+</html>
